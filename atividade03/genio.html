@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gênio — Adivinhe o Número</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:      #0d0b1e;
+      --card:    #161230;
+      --accent1: #ff3300;
+      --accent2: #ff9900;
+      --accent3: #00e5ff;
+      --green:   #2ecc71;
+      --text:    #f0eaff;
+      --muted:   #9b93cc;
+      --radius:  20px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      background-image:
+        radial-gradient(ellipse at 15% 20%, #2a1a6e44 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 80%, #6e1a2a33 0%, transparent 55%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Nunito', sans-serif;
+      color: var(--text);
+      padding: 24px;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        radial-gradient(1.2px 1.2px at  8% 12%, #ffffffcc, transparent),
+        radial-gradient(1px   1px   at 22% 55%, #ffffff99, transparent),
+        radial-gradient(1.5px 1.5px at 40%  8%, #ffffffbb, transparent),
+        radial-gradient(1px   1px   at 60% 72%, #ffffff88, transparent),
+        radial-gradient(1.2px 1.2px at 78% 35%, #ffffffaa, transparent),
+        radial-gradient(1px   1px   at 90%  5%, #ffffffcc, transparent),
+        radial-gradient(1px   1px   at 12% 88%, #ffffff77, transparent),
+        radial-gradient(1.5px 1.5px at 52% 95%, #ffffff99, transparent),
+        radial-gradient(1px   1px   at 95% 65%, #ffffffbb, transparent),
+        radial-gradient(1.2px 1.2px at 33% 30%, #ffffff66, transparent);
+      pointer-events: none;
+    }
+
+    .card {
+      position: relative; z-index: 1;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid #ffffff12;
+      box-shadow: 0 12px 60px rgba(0,0,0,.6);
+      padding: 44px 40px 36px;
+      width: 100%; max-width: 430px;
+      text-align: center;
+      animation: floatIn .65s cubic-bezier(.22,1,.36,1) both;
+    }
+
+    @keyframes floatIn {
+      from { opacity:0; transform:translateY(32px) scale(.96); }
+      to   { opacity:1; transform:translateY(0)    scale(1);   }
+    }
+
+    .avatar {
+      width: 96px; height: 96px;
+      margin: 0 auto 16px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #2d1b69, #6e1a2a);
+      border: 3px solid var(--accent1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 50px;
+      box-shadow: 0 0 28px var(--accent1)77;
+      animation: glow 3s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%,100% { box-shadow: 0 0 28px var(--accent1)77; }
+      50%      { box-shadow: 0 0 46px var(--accent2)99; }
+    }
+
+    @keyframes bounce {
+      0%,100% { transform: scale(1); }
+      40%      { transform: scale(1.2); }
+    }
+
+    h1 {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.4rem;
+      letter-spacing: 3px;
+      background: linear-gradient(90deg, var(--accent1), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      font-size: .8rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+    }
+
+    #frase {
+      min-height: 58px;
+      font-size: .97rem;
+      font-weight: 600;
+      line-height: 1.55;
+      padding: 14px 18px;
+      background: #ffffff08;
+      border-radius: 12px;
+      border: 1px solid #ffffff14;
+      margin-bottom: 28px;
+      transition: border-color .3s, color .3s, background .3s;
+    }
+
+    .picker {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      margin-bottom: 10px;
+    }
+
+    .spin-btn {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      color: #fff;
+      font-size: 1.6rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 16px var(--accent1)55;
+      transition: transform .15s, opacity .15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .spin-btn:hover  { transform: scale(1.12); }
+    .spin-btn:active { transform: scale(.92); opacity:.75; }
+    .spin-btn:disabled { opacity: .3; cursor: not-allowed; transform: none; }
+
+    #valor-num {
+      font-family: 'Fredoka One', cursive;
+      font-size: 3.2rem;
+      color: var(--accent3);
+      min-width: 64px;
+      text-shadow: 0 0 20px var(--accent3)88;
+      user-select: none;
+    }
+
+    @keyframes numPop {
+      0%   { transform: scale(1); }
+      50%  { transform: scale(1.35); }
+      100% { transform: scale(1); }
+    }
+    .pop { animation: numPop .25s ease; }
+
+    .range-hint {
+      font-size: .76rem;
+      color: var(--muted);
+      margin-bottom: 26px;
+      letter-spacing: .5px;
+    }
+
+    #btnPalpite {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 13px;
+      background: linear-gradient(135deg, var(--accent1) 0%, var(--accent2) 100%);
+      color: #fff;
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.25rem;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      box-shadow: 0 6px 24px var(--accent1)55;
+      transition: transform .15s, box-shadow .15s;
+    }
+    #btnPalpite:hover  { transform: translateY(-2px); box-shadow: 0 10px 30px var(--accent1)77; }
+    #btnPalpite:active { transform: translateY(1px);  box-shadow: 0 3px 12px var(--accent1)44; }
+
+    .score-row {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 28px;
+      padding-top: 22px;
+      border-top: 1px solid #ffffff10;
+    }
+    .score-item { text-align: center; }
+    .score-item .num {
+      font-family: 'Fredoka One', cursive;
+      font-size: 1.7rem;
+    }
+    .score-item .lbl {
+      font-size: .7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-top: 2px;
+    }
+    .acertos .num { color: var(--green); }
+    .erros   .num { color: var(--accent1); }
+    .total   .num { color: var(--accent3); }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-9px); }
+      40%      { transform: translateX(9px); }
+      60%      { transform: translateX(-6px); }
+      80%      { transform: translateX(5px); }
+    }
+    .shake { animation: shake .42s ease; }
+  </style>
+</head>
+<body>
+
+<div class="card" id="card">
+
+  <div class="avatar" id="avatar">🧞</div>
+
+  <h1>GÊNIO</h1>
+  <p class="subtitle">Jogo de adivinhação</p>
+
+  <div id="frase">
+    Vou pensar um número entre <strong>1 e 5</strong>.<br>Tente adivinhar!
+  </div>
+
+  <div class="picker">
+    <button class="spin-btn" id="btnMenos" aria-label="Diminuir">−</button>
+    <div id="valor-num">1</div>
+    <button class="spin-btn" id="btnMais" aria-label="Aumentar">+</button>
+  </div>
+  <p class="range-hint">Escolha um número de 1 a 5</p>
+
+  <button id="btnPalpite">🎯 Dar Palpite!</button>
+
+  <div class="score-row">
+    <div class="score-item acertos">
+      <div class="num" id="sc-acertos">0</div>
+      <div class="lbl">Acertos</div>
+    </div>
+    <div class="score-item erros">
+      <div class="num" id="sc-erros">0</div>
+      <div class="lbl">Erros</div>
+    </div>
+    <div class="score-item total">
+      <div class="num" id="sc-total">0</div>
+      <div class="lbl">Tentativas</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let valor   = 1;
+  let acertos = 0;
+  let erros   = 0;
+
+  const valorNum  = document.getElementById('valor-num');
+  const frase     = document.getElementById('frase');
+  const avatar    = document.getElementById('avatar');
+  const card      = document.getElementById('card');
+  const btnMenos  = document.getElementById('btnMenos');
+  const btnMais   = document.getElementById('btnMais');
+  const scAcertos = document.getElementById('sc-acertos');
+  const scErros   = document.getElementById('sc-erros');
+  const scTotal   = document.getElementById('sc-total');
+
+  function atualizaBotoes() {
+    btnMenos.disabled = (valor <= 1);
+    btnMais.disabled  = (valor >= 5);
+  }
+
+  function popNum() {
+    valorNum.classList.remove('pop');
+    void valorNum.offsetWidth;
+    valorNum.classList.add('pop');
+  }
+
+  btnMenos.addEventListener('click', () => {
+    if (valor > 1) {
+      valor--;
+      valorNum.textContent = valor;
+      popNum();
+      atualizaBotoes();
+    }
+  });
+
+  btnMais.addEventListener('click', () => {
+    if (valor < 5) {
+      valor++;
+      valorNum.textContent = valor;
+      popNum();
+      atualizaBotoes();
+    }
+  });
+
+  document.getElementById('btnPalpite').addEventListener('click', () => {
+    // Sorteia número entre 1 e 5 (inclusive)
+    const sorteado = Math.floor(Math.random() * 5) + 1;
+    const acertou  = (sorteado === valor);
+
+    if (acertou) {
+      acertos++;
+      frase.style.borderColor = 'var(--green)';
+      frase.style.color       = 'var(--green)';
+      frase.style.background  = '#2ecc7115';
+      frase.innerHTML         = '🎉 <strong>Acertou!</strong> Eu estava pensando no número <strong>' + sorteado + '</strong>!';
+      avatar.textContent      = '🎊';
+      avatar.style.animation  = 'glow 3s ease-in-out infinite, bounce .4s ease';
+    } else {
+      erros++;
+      frase.style.borderColor = 'var(--accent1)';
+      frase.style.color       = 'var(--accent2)';
+      frase.style.background  = '#ff330015';
+      frase.innerHTML         = '😈 <strong>Errou!</strong> Eu pensei no número <strong>' + sorteado + '</strong>!';
+      avatar.textContent      = '😈';
+      card.classList.remove('shake');
+      void card.offsetWidth;
+      card.classList.add('shake');
+    }
+
+    scAcertos.textContent = acertos;
+    scErros.textContent   = erros;
+    scTotal.textContent   = acertos + erros;
+
+    // Reset após 2.5s
+    setTimeout(() => {
+      frase.style.borderColor = '';
+      frase.style.color       = '';
+      frase.style.background  = '';
+      frase.innerHTML         = 'Vou pensar um novo número entre <strong>1 e 5</strong>.<br>Tente adivinhar!';
+      avatar.textContent      = '🧞';
+      avatar.style.animation  = 'glow 3s ease-in-out infinite';
+    }, 2500);
+  });
+
+  atualizaBotoes();
+</script>
+
+</body>
+</html>
